@@ -237,7 +237,7 @@ def harvest_job_list(context,data_dict):
 
     query = query.order_by(HarvestJob.created.desc())
 
-    jobs = query.all()
+    jobs = query.limit(10)
 
     context['return_error_summary'] = False
     return [harvest_job_dictize(job, context) for job in jobs]
@@ -332,18 +332,18 @@ def harvest_log_list(context,data_dict):
         limit = int(data_dict.get('limit', 100))
     except ValueError:
         limit = 100
-        
+
     if data_dict.get('per_page', False):
         try:
             limit = int(data_dict.get('per_page', 100))
         except ValueError:
             limit = 100
-    
+
     try:
         offset = int(data_dict.get('offset', 0))
     except ValueError:
         offset = 0
-    
+
     level = data_dict.get('level', None)
 
     query = session.query(HarvestLog)
@@ -353,8 +353,8 @@ def harvest_log_list(context,data_dict):
 
     query = query.order_by(HarvestLog.created.desc())
     logs = query.offset(offset).limit(limit).all()
-    
-    out = [harvest_log_dictize(obj, context) for obj in logs]        
+
+    out = [harvest_log_dictize(obj, context) for obj in logs]
     return out
 
 def _get_sources_for_user(context,data_dict):
