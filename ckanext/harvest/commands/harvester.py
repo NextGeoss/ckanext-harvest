@@ -388,14 +388,16 @@ class Harvester(CkanCommand):
             context, {'source_id': source['id'], 'run': True})
 
         self.print_harvest_job(job)
-        jobs = get_action('harvest_job_list')(context, {'status': u'New'})
+        _, jobs = get_action('harvest_job_list')(context, {'status': u'New',
+                                                           'limit': 100})
         self.print_there_are('harvest job', jobs, condition=u'New')
 
     def list_harvest_jobs(self):
         context = {'model': model, 'user': self.admin_user['name'], 'session': model.Session}
-        jobs = get_action('harvest_job_list')(context, {})
+        count, jobs = get_action('harvest_job_list')(context, {'limit': 100})
 
         self.print_harvest_jobs(jobs)
+        print('Displaying {} of {} harvest jobs'.format(len(jobs), count))
         self.print_there_are(what='harvest job', sequence=jobs)
 
     def job_abort(self):
@@ -438,7 +440,7 @@ class Harvester(CkanCommand):
             job_dict = get_action('harvest_job_create')(
                 context, {'source_id': source['id']})
         except HarvestJobExists:
-            running_jobs = get_action('harvest_job_list')(
+            _, running_jobs = get_action('harvest_job_list')(
                 context, {'source_id': source['id'], 'status': 'Running'})
             if running_jobs:
                 print('\nSource "{0}" apparently has a "Running" job:\n{1}'
@@ -450,7 +452,7 @@ class Harvester(CkanCommand):
                     context, {'source_id': source['id']})
             else:
                 print('Reusing existing harvest job')
-                jobs = get_action('harvest_job_list')(
+                _, jobs = get_action('harvest_job_list')(
                     context, {'source_id': source['id'], 'status': 'New'})
                 assert len(jobs) == 1, \
                     'Multiple "New" jobs for this source! {0}'.format(jobs)

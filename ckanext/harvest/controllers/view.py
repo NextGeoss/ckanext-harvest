@@ -1,4 +1,5 @@
 import re
+import urllib
 import xml.etree.ElementTree as etree
 try:
     # Python 2.7
@@ -224,13 +225,35 @@ class ViewController(BaseController):
                              source_dict=source_dict,
                              is_last=True)
 
-
     def list_jobs(self, source):
 
         try:
-            context = {'model':model, 'user':c.user}
-            c.harvest_source =  p.toolkit.get_action('harvest_source_show')(context, {'id': source})
-            c.jobs = p.toolkit.get_action('harvest_job_list')(context, {'source_id': c.harvest_source['id']})
+            context = {'model': model, 'user': c.user}
+
+            c.harvest_source = p.toolkit.get_action('harvest_source_show')(
+                context, {'id': source}
+            )
+
+            page = h.get_page_number(request.params)
+            items_per_page = 20
+
+            job_count, c.jobs = p.toolkit.get_action('harvest_job_list')(
+                context, {
+                    'source_id': c.harvest_source['id'],
+                    'page': page,
+                    'limit': items_per_page
+                }
+            )
+
+            path = urllib.unquote(request.environ['PATH_INFO'])
+
+            c.page = h.Page(
+                collection=c.jobs,
+                page=page,
+                url=lambda page: '{}?page={}'.format(path, page),
+                item_count=job_count,
+                items_per_page=items_per_page
+            )
 
             return render('source/job/list.html')
 

@@ -169,13 +169,13 @@ def _check_for_existing_jobs(context, source_id):
         'source_id': source_id,
         'status': u'New'
     }
-    exist_new = harvest_job_list(context, data_dict)
+    count_new, _ = harvest_job_list(context, data_dict)
     data_dict = {
         'source_id': source_id,
         'status': u'Running'
     }
-    exist_running = harvest_job_list(context, data_dict)
-    exist = len(exist_new + exist_running) > 0
+    count_running, _ = harvest_job_list(context, data_dict)
+    exist = (count_new + count_running) > 0
 
     return exist
 

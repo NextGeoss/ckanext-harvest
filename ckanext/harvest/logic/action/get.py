@@ -5,6 +5,8 @@ from ckan.model import User
 import datetime
 
 from ckan import logic
+import ckan.lib.helpers as h
+from ckan.lib.base import request
 from ckan.plugins import PluginImplementations
 from ckanext.harvest.interfaces import IHarvester
 
@@ -212,35 +214,44 @@ def harvest_job_report(context, data_dict):
     return report
 
 @side_effect_free
-def harvest_job_list(context,data_dict):
+def harvest_job_list(context, data_dict):
     '''Returns a list of jobs and details of objects and errors.
 
     :param status: filter by e.g. "New" or "Finished" jobs
     :param source_id: filter by a harvest source
+    :param page: page of paginated results to show
+    :param limit: max number of jobs returned per query
     '''
 
-    check_access('harvest_job_list',context,data_dict)
+    check_access('harvest_job_list', context, data_dict)
 
     model = context['model']
     session = context['session']
 
-    source_id = data_dict.get('source_id',False)
+    source_id = data_dict.get('source_id', False)
     status = data_dict.get('status', False)
 
     query = session.query(HarvestJob)
 
     if source_id:
-        query = query.filter(HarvestJob.source_id==source_id)
+        query = query.filter(HarvestJob.source_id == source_id)
 
     if status:
-        query = query.filter(HarvestJob.status==status)
+        query = query.filter(HarvestJob.status == status)
+
+    count = query.count()
 
     query = query.order_by(HarvestJob.created.desc())
 
-    jobs = query.limit(10)
+    limit = data_dict['limit']
+    offset = (data_dict['page'] - 1) * (limit - 1)
+
+    jobs = query.limit(limit).offset(offset)
 
     context['return_error_summary'] = False
-    return [harvest_job_dictize(job, context) for job in jobs]
+
+    return (count, [harvest_job_dictize(job, context) for job in jobs])
+
 
 @side_effect_free
 def harvest_object_show(context,data_dict):

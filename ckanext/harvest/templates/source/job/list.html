@@ -63,7 +63,11 @@
        {% endfor %}
     </ul>
   {% endif %}
-
 </div>
+
+{% block page_pagination %}
+  {{ c.page.pager() }}
+{% endblock %}
+
 {% endblock %}
   

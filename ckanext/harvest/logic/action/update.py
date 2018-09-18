@@ -517,8 +517,8 @@ def harvest_jobs_run(context, data_dict):
     context['return_objects'] = False
 
     # Flag finished jobs as such
-    jobs = harvest_job_list(
-        context, {'source_id': source_id, 'status': u'Running'})
+    _, jobs = harvest_job_list(
+        context, {'source_id': source_id, 'status': u'Running', 'limit': 100})
     if len(jobs):
         for job in jobs:
             if job['gather_finished']:
