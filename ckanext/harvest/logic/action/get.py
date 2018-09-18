@@ -243,8 +243,8 @@ def harvest_job_list(context, data_dict):
 
     query = query.order_by(HarvestJob.created.desc())
 
-    limit = data_dict['limit']
-    offset = (data_dict['page'] - 1) * (limit - 1)
+    limit = data_dict.get('limit', 100)
+    offset = (data_dict.get('page', 1) - 1) * (limit - 1)
 
     jobs = query.limit(limit).offset(offset)
 
