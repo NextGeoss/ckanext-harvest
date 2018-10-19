@@ -207,6 +207,8 @@ class Harvester(CkanCommand):
             self.reindex()
         elif cmd == 'clean_harvest_log':
             self.clean_harvest_log()
+        elif cmd == 'clean_running_job':
+            self.clean_running_job()
         else:
             print('Command {0} not recognized'.format(cmd))
 
@@ -565,3 +567,24 @@ class Harvester(CkanCommand):
 
         # Delete logs older then the given date
         clean_harvest_log(condition=condition)
+
+
+    def clean_running_job(self):
+        from datetime import datetime, timedelta
+
+        context = {'model': model, 'user': self.admin_user['name'], 'session': model.Session}
+        jobs = get_action('harvest_job_list')(context, {'status': 'Running'})
+        self.print_harvest_jobs(jobs)
+        self.print_there_are(what='harvest job', sequence=jobs)
+
+        for job in jobs:
+            if job['stats']['errored'] != 0:
+                source_id = job['source_id']
+                job = get_action('harvest_job_abort')(
+                        context, {'id': source_id})
+                print('Job status: {0}'.format(job['status']))
+
+        jobs = get_action('harvest_job_list')(context, {'status': 'Running'})
+
+        self.print_harvest_jobs(jobs)
+        self.print_there_are(what='harvest job', sequence=jobs)
