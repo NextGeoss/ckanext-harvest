@@ -584,6 +584,16 @@ class Harvester(CkanCommand):
                         context, {'id': source_id})
                 print('Job status: {0}'.format(job['status']))
 
+            time_diff = (datetime.utcnow() - datetime.striptime(job['created'], '%Y-%m-%d %H:%M:%S.%f'))
+            time_hours = time_diff.total_seconds() / 3600
+
+            # add config var for configurable time for aborting a job
+            if time_hours >= 5:
+                source_id = job['source_id']
+                job = get_action('harvest_job_abort')(
+                        context, {'id': source_id})
+                print('Job status: {0}'.format(job['status']))
+
         jobs = get_action('harvest_job_list')(context, {'status': 'Running'})
 
         self.print_harvest_jobs(jobs)
